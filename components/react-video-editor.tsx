@@ -1,18 +1,16 @@
 "use client";
 
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  useMemo,
-  useEffect,
-} from "react";
+import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Player, PlayerRef } from "@remotion/player";
 import { Sequence, Video, interpolate, useCurrentFrame } from "remotion";
-import { Plus, Text } from "lucide-react";
+import { LetterText, Plus, Text } from "lucide-react";
 
 import { Clip, TextOverlay } from "@/types/types";
 
+/**
+ * TimelineMarker Component
+ * Renders a marker on the timeline to indicate the current frame position
+ */
 const TimelineMarker: React.FC<{
   currentFrame: number;
   totalDuration: number;
@@ -38,16 +36,25 @@ const TimelineMarker: React.FC<{
 
 TimelineMarker.displayName = "TimelineMarker";
 
+/**
+ * ReactVideoEditor Component
+ * Main component for the video editor interface
+ */
 const ReactVideoEditor: React.FC = () => {
+  // State management
   const [clips, setClips] = useState<Clip[]>([]);
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
-  const playerRef = useRef<PlayerRef>(null);
   const [totalDuration, setTotalDuration] = useState(1);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Refs
+  const playerRef = useRef<PlayerRef>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Adds a new clip to the timeline
+   */
   const addClip = () => {
     const lastItem = [...clips, ...textOverlays].reduce(
       (latest, item) =>
@@ -69,19 +76,9 @@ const ReactVideoEditor: React.FC = () => {
     updateTotalDuration([...clips, newClip], textOverlays);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (playerRef.current) {
-        const frame = playerRef.current.getCurrentFrame();
-        if (frame !== null) {
-          setCurrentFrame(frame);
-        }
-      }
-    }, 1000 / 30);
-
-    return () => clearInterval(interval);
-  }, []);
-
+  /**
+   * Adds a new text overlay to the timeline
+   */
   const addTextOverlay = () => {
     const lastItem = [...clips, ...textOverlays].reduce(
       (latest, item) =>
@@ -103,6 +100,9 @@ const ReactVideoEditor: React.FC = () => {
     updateTotalDuration(clips, [...textOverlays, newOverlay]);
   };
 
+  /**
+   * Updates the total duration of the composition based on clips and text overlays
+   */
   const updateTotalDuration = (
     updatedClips: Clip[],
     updatedTextOverlays: TextOverlay[]
@@ -120,6 +120,9 @@ const ReactVideoEditor: React.FC = () => {
     setTotalDuration(newTotalDuration);
   };
 
+  /**
+   * Composition component for Remotion Player
+   */
   const Composition = useCallback(
     () => (
       <>
@@ -143,6 +146,9 @@ const ReactVideoEditor: React.FC = () => {
     [clips, textOverlays]
   );
 
+  /**
+   * TimelineItem component for rendering clips and text overlays on the timeline
+   */
   const TimelineItem: React.FC<{
     item: Clip | TextOverlay;
     type: "clip" | "text";
@@ -161,7 +167,7 @@ const ReactVideoEditor: React.FC = () => {
         className={`absolute h-10 ${bgColor} rounded-md`}
         style={{
           left: `${(item.start / totalDuration) * 100}%`,
-          width: `calc(${(item.duration / totalDuration) * 100}% - 4px)`, // Subtract 4px to create a gap
+          width: `calc(${(item.duration / totalDuration) * 100}% - 4px)`,
           top: `${item.row * 44}px`,
         }}
       >
@@ -174,9 +180,24 @@ const ReactVideoEditor: React.FC = () => {
     );
   };
 
+  // Effect for updating current frame
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playerRef.current) {
+        const frame = playerRef.current.getCurrentFrame();
+        if (frame !== null) {
+          setCurrentFrame(frame);
+        }
+      }
+    }, 1000 / 30);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Effect for checking mobile view
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768); 
+      setIsMobile(window.innerWidth <= 768);
     };
 
     checkMobile();
@@ -185,6 +206,7 @@ const ReactVideoEditor: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Render mobile view message if on a mobile device
   if (isMobile) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900 text-white p-4">
@@ -196,10 +218,11 @@ const ReactVideoEditor: React.FC = () => {
     );
   }
 
+  // Main render
   return (
-    <div className=" flex-col text-white">
-      <div className=" flex overflow-hidden ">
-        {/* Player section */}
+    <div className="flex-col text-white">
+      {/* Player section */}
+      <div className="flex overflow-hidden">
         <div className="border border-gray-700 flex-grow p-6 flex items-center justify-center overflow-hidden bg-gray-800">
           <div className="w-full h-full flex items-center justify-center">
             <div
@@ -231,6 +254,7 @@ const ReactVideoEditor: React.FC = () => {
 
       {/* Timeline section */}
       <div className="h-32 bg-gray-900 w-full overflow-hidden flex flex-col border border-gray-700 rounded-b-md">
+        {/* Timeline controls */}
         <div className="flex justify-between items-center border-b border-gray-700 p-4">
           <div className="flex items-center space-x-4">
             <button
@@ -244,18 +268,19 @@ const ReactVideoEditor: React.FC = () => {
               onClick={addTextOverlay}
               className="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-md transition-colors duration-200 flex items-center space-x-2"
             >
-              <Text className="h-5 w-5" />
+              <LetterText className="h-5 w-5" />
               <span className="text-sm font-medium">Add Text</span>
             </button>
           </div>
         </div>
 
+        {/* Timeline items */}
         <div
           ref={timelineRef}
-          className=" bg-gray-800 rounded-lg shadow-inner relative"
+          className="bg-gray-800 rounded-lg shadow-inner relative"
         >
           <div className="absolute inset-0">
-            <div className=" top-10 left-0 right-0 bottom-0 overflow-x-auto overflow-y-visible p-2 ">
+            <div className="top-10 left-0 right-0 bottom-0 overflow-x-auto overflow-y-visible p-2">
               <div
                 className="gap-4"
                 style={{
@@ -264,7 +289,7 @@ const ReactVideoEditor: React.FC = () => {
                   position: "relative",
                 }}
               >
-                <div className="h-10 inset-0 flex flex-col z-0 ">
+                <div className="h-10 inset-0 flex flex-col z-0">
                   <div className="flex-grow flex flex-col p-[2px]">
                     <div className="flex-grow bg-gradient-to-b from-gray-700 to-gray-800 rounded-sm"></div>
                   </div>
@@ -298,6 +323,10 @@ const ReactVideoEditor: React.FC = () => {
   );
 };
 
+/**
+ * TextOverlayComponent
+ * Renders a text overlay with a fade-in effect
+ */
 const TextOverlayComponent: React.FC<{ text: string }> = ({ text }) => {
   const frame = useCurrentFrame();
   const opacity = interpolate(frame, [0, 30], [0, 1], {
