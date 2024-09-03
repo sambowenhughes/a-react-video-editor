@@ -2,6 +2,12 @@
 
 A free, open-source basic video editor example that runs directly in your web browser. This project serves as a foundation for video editing capabilities and is a simplified version of the full-featured [React Video Editor](https://www.reactvideoeditor.com/).
 
+Built with:
+- [Next.js](https://nextjs.org/) - React framework for server-side rendering and static site generation
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Remotion](https://www.remotion.dev/) - Framework for programmatically creating videos
+- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+
 ## About the Project
 
 This React Video Editor serves as a foundational tool for understanding and interacting with the core building blocks of Remotion. It offers a user-friendly, browser-based interface that allows users to compose videos by arranging clips and adding text overlays seamlessly. While the current version provides a smooth and interactive experience, it's designed to be a stepping stone toward building a fully-fledged video editor
