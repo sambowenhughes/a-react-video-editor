@@ -1,37 +1,42 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import { Player, PlayerRef } from "@remotion/player";
 import { Sequence, Video, interpolate, useCurrentFrame } from "remotion";
 import { Plus, Text } from "lucide-react";
 
 import { Clip, TextOverlay } from "@/types/types";
 
-const TimelineMarker: React.FC<{ currentFrame: number; totalDuration: number }> = React.memo(
-  ({ currentFrame, totalDuration }) => {
-    const markerPosition = useMemo(() => {
-      return `${(currentFrame / totalDuration) * 100}%`;
-    }, [currentFrame, totalDuration]);
+const TimelineMarker: React.FC<{
+  currentFrame: number;
+  totalDuration: number;
+}> = React.memo(({ currentFrame, totalDuration }) => {
+  const markerPosition = useMemo(() => {
+    return `${(currentFrame / totalDuration) * 100}%`;
+  }, [currentFrame, totalDuration]);
 
-    return (
-      <div
-        className="absolute top-0 w-[2.4px] bg-red-500 pointer-events-none z-50"
-        style={{
-          left: markerPosition,
-          transform: 'translateX(-50%)',
-          height: '100px',
-          top: '0px',
-        }}
-      >
-        <div 
-          className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[12px] border-l-transparent border-r-transparent border-t-red-500 absolute top-[0px] left-1/2 transform -translate-x-1/2"
-        />
-      </div>
-    );
-  }
-);
+  return (
+    <div
+      className="absolute top-0 w-[1.4px] bg-red-500 pointer-events-none z-50"
+      style={{
+        left: markerPosition,
+        transform: "translateX(-50%)",
+        height: "100px",
+        top: "0px",
+      }}
+    >
+      <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-t-[12px] border-l-transparent border-r-transparent border-t-red-500 absolute top-[0px] left-1/2 transform -translate-x-1/2" />
+    </div>
+  );
+});
 
-TimelineMarker.displayName = 'TimelineMarker';
+TimelineMarker.displayName = "TimelineMarker";
 
 const ReactVideoEditor: React.FC = () => {
   const [clips, setClips] = useState<Clip[]>([]);
@@ -39,13 +44,18 @@ const ReactVideoEditor: React.FC = () => {
   const playerRef = useRef<PlayerRef>(null);
   const [totalDuration, setTotalDuration] = useState(1);
   const [currentFrame, setCurrentFrame] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   const timelineRef = useRef<HTMLDivElement>(null);
 
   const addClip = () => {
-    const lastItem = [...clips, ...textOverlays].reduce((latest, item) => 
-      item.start + item.duration > latest.start + latest.duration ? item : latest
-    , { start: 0, duration: 0 });
+    const lastItem = [...clips, ...textOverlays].reduce(
+      (latest, item) =>
+        item.start + item.duration > latest.start + latest.duration
+          ? item
+          : latest,
+      { start: 0, duration: 0 }
+    );
 
     const newClip: Clip = {
       id: `clip-${clips.length + 1}`,
@@ -57,7 +67,6 @@ const ReactVideoEditor: React.FC = () => {
 
     setClips([...clips, newClip]);
     updateTotalDuration([...clips, newClip], textOverlays);
-
   };
 
   useEffect(() => {
@@ -74,9 +83,13 @@ const ReactVideoEditor: React.FC = () => {
   }, []);
 
   const addTextOverlay = () => {
-    const lastItem = [...clips, ...textOverlays].reduce((latest, item) => 
-      item.start + item.duration > latest.start + latest.duration ? item : latest
-    , { start: 0, duration: 0 });
+    const lastItem = [...clips, ...textOverlays].reduce(
+      (latest, item) =>
+        item.start + item.duration > latest.start + latest.duration
+          ? item
+          : latest,
+      { start: 0, duration: 0 }
+    );
 
     const newOverlay: TextOverlay = {
       id: `text-${textOverlays.length + 1}`,
@@ -118,7 +131,7 @@ const ReactVideoEditor: React.FC = () => {
               from={item.start}
               durationInFrames={item.duration}
             >
-              {'src' in item ? (
+              {"src" in item ? (
                 <Video src={item.src} />
               ) : (
                 <TextOverlayComponent text={item.text} />
@@ -148,7 +161,7 @@ const ReactVideoEditor: React.FC = () => {
         className={`absolute h-10 ${bgColor} rounded-md`}
         style={{
           left: `${(item.start / totalDuration) * 100}%`,
-          width: `${(item.duration / totalDuration) * 100}%`,
+          width: `calc(${(item.duration / totalDuration) * 100}% - 4px)`, // Subtract 4px to create a gap
           top: `${item.row * 44}px`,
         }}
       >
@@ -161,11 +174,33 @@ const ReactVideoEditor: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768); 
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-900 text-white p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Mobile View Not Supported</h2>
+          <p className="text-md">This video editor is only available on desktop or laptop devices.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen w-full flex flex-col bg-gray-950 text-white">
-      <div className="flex-grow flex overflow-hidden h-3/3">
+    <div className=" flex-col text-white">
+      <div className=" flex overflow-hidden ">
         {/* Player section */}
-        <div className="border border-gray-700 flex-grow p-6 flex items-center justify-center overflow-hidden bg-gray-900 inset-0 h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
+        <div className="border border-gray-700 flex-grow p-6 flex items-center justify-center overflow-hidden bg-gray-800">
           <div className="w-full h-full flex items-center justify-center">
             <div
               className="shadow-lg rounded-lg overflow-hidden bg-slate-900"
@@ -195,7 +230,7 @@ const ReactVideoEditor: React.FC = () => {
       </div>
 
       {/* Timeline section */}
-      <div className="h-1/6 bg-gray-900 w-full overflow-hidden flex flex-col">
+      <div className="h-32 bg-gray-900 w-full overflow-hidden flex flex-col border border-gray-700 rounded-b-md">
         <div className="flex justify-between items-center border-b border-gray-700 p-4">
           <div className="flex items-center space-x-4">
             <button
@@ -222,6 +257,7 @@ const ReactVideoEditor: React.FC = () => {
           <div className="absolute inset-0">
             <div className=" top-10 left-0 right-0 bottom-0 overflow-x-auto overflow-y-visible p-2 ">
               <div
+                className="gap-4"
                 style={{
                   width: `100%`,
                   height: "100%",
@@ -252,10 +288,10 @@ const ReactVideoEditor: React.FC = () => {
               </div>
             </div>
           </div>
-              <TimelineMarker
-                currentFrame={currentFrame}
-                totalDuration={totalDuration}
-              />
+          <TimelineMarker
+            currentFrame={currentFrame}
+            totalDuration={totalDuration}
+          />
         </div>
       </div>
     </div>
