@@ -8,6 +8,10 @@ Built with:
 - [Remotion](https://www.remotion.dev/) - Framework for programmatically creating videos
 - [React](https://reactjs.org/) - JavaScript library for building user interfaces
 
+## Demo
+
+Try out the live demo: [React Video Editor (Open Source Edition)](https://www.reactvideoeditor.com/open-source)
+
 ## About the Project
 
 This React Video Editor serves as a foundational tool for understanding and interacting with the core building blocks of Remotion. It offers a user-friendly, browser-based interface that allows users to compose videos by arranging clips and adding text overlays seamlessly. While the current version provides a smooth and interactive experience, it's designed to be a stepping stone toward building a fully-fledged video editor
